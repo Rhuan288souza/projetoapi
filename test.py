@@ -75,7 +75,7 @@ def mesQtdMaiorOcorrencias():
 
 
 '''
-    Mês com maior quantidade de ocorrências de determinado crime, estado e ano
+    Mês com menor quantidade de ocorrências de determinado crime, estado e ano
   
     Exemplo : mesMenorQtdOcorrenciasEstado?UF=Acre&TipoCrime=Estupro&Ano=2015
 '''
@@ -89,7 +89,109 @@ def mesQtdMenorOcorrencias():
     return resp
 
 
+'''
+    Quantidade de ocorrências por ano de um determinado estado
+    db.ocorrencias.aggregate([{$match:{UF:"Acre"}},{$group:{_id:"$Ano",total:{$sum:"$Ocorrências"}}},])
+    Exemplo : mesMenorQtdOcorrenciasEstado?UF=Acre&TipoCrime=Estupro&Ano=2015
+'''
 
+
+'''
+    Quantidade anual de ocorrências por estado
+    Soma as quantidades de ocorrência de determinado crime
+    Exemplo : qtdOcorrenciasPorAnoEstado?Ano=2015
+    @app.route('/qtdOcorrenciasPorAnoEstado')
+    def qtdCrimePorAnoEstado():
+    TipoCrime = request.args.get('TipoCrime', type = str)
+    retorno = mongo.db.ocorrencias.aggregate([{'$match':{'TipoCrime':TipoCrime}},{'$group':{'_id':'$UF','total':{'$sum':"$Ocorrências"}}},])
+    resp = dumps(retorno)
+    return resp
+'''
+
+
+
+
+'''
+    Todos os sobre a ocorrência de determinado crime por estado
+    Exemplo : ocorrenciasPorEstado?TipoCrime=Estupro
+'''
+
+@app.route('/ocorrenciasPorEstado')
+def ocorrenciasPorEstado():
+    TipoCrime = request.args.get('TipoCrime', type = str)
+    retorno = mongo.db.ocorrencias.aggregate([{'$match':{'TipoCrime':TipoCrime}}])
+    resp = dumps(retorno)
+    return resp
+
+
+'''
+    Tipo de crime com maior quantidade de ocorrências por estado em determinado ano
+    Exemplo : ocorrenciasEstado?UF=Acre&TipoCrime=Estupro&Mes=janeiro&Ano=2015
+'''
+@app.route('/tipoCrimeMaiorOcorrenciasEstado')
+def tipoCrimeMaiorOcorrenciasEstado():
+    UF = request.args.get('UF', type = str)
+    Ano = request.args.get('Ano', type = int)
+    ocorrencias = mongo.db.ocorrencias.find({'UF': UF,'Ano':Ano},{'UF':1,'Mês':1,'TipoCrime':1,'_id':0,'Ocorrências':1}).sort([('Ocorrências',-1)]).limit(1)
+    resp = dumps(ocorrencias)
+    return resp
+
+    '''
+    Tipo de crime com maior quantidade de ocorrências por estado em determinado ano
+    Exemplo : ocorrenciasEstado?UF=Acre&TipoCrime=Estupro&Mes=janeiro&Ano=2015
+'''
+@app.route('/tipoCrimeMenorOcorrenciasEstado')
+def tipoCrimeMenorOcorrenciasEstado():
+    UF = request.args.get('UF', type = str)
+    Ano = request.args.get('Ano', type = int)
+    ocorrencias = mongo.db.ocorrencias.find({'UF': UF,'Ano':Ano},{'UF':1,'Mês':1,'TipoCrime':1,'_id':0,'Ocorrências':1}).sort([('Ocorrências',1)]).limit(1)
+    resp = dumps(ocorrencias)
+    return resp
+
+
+
+'''
+    Retorna o número de vítimas de um determinado crime em um mês específico do ano em uma UF:
+    Exemplo : ocorrenciasEstado?UF=Acre&TipoCrime=Estupro&Mes=janeiro&Ano=2015
+'''
+@app.route('/vitimasEstado')
+def vitimas():
+    UF = request.args.get('UF', type = str)
+    TipoCrime = request.args.get('TipoCrime', type = str)
+    Mes = request.args.get('Mes', type = str)
+    Ano = request.args.get('Ano', type = int)
+    vitimas = mongo.db.vitimas.find({'UF':UF,'TipoCrime':TipoCrime,'Mês':Mes,'Ano':Ano},{'Vítimas':1,'_id':0})
+    resp = dumps(vitimas)
+    return resp
+
+
+'''
+    Mês com maior quantidade de vítimas de determinado crime, estado e ano
+  
+    Exemplo : mesMaiorQtdOcorrenciasEstado?UF=Acre&TipoCrime=Estupro&Ano=2015
+'''
+@app.route('/mesMaiorQtdVitimasEstado')
+def mesMaiorQtdVitimasEstado():
+    UF = request.args.get('UF', type = str)
+    TipoCrime = request.args.get('TipoCrime', type = str)
+    Ano = request.args.get('Ano', type = int)
+    vitimas = mongo.db.vitimas.find({'UF': UF,'TipoCrime':TipoCrime,'Ano':Ano},{'UF':1,'Mês':1,'Vítimas':1,'_id':0}).sort([('Vítimas',-1)]).limit(1)
+    resp = dumps(vitimas)
+    return resp
+
+    '''
+    Mês com menor quantidade de vítimas de determinado crime, estado e ano
+  
+    Exemplo : mesMaiorQtdOcorrenciasEstado?UF=Acre&TipoCrime=Estupro&Ano=2015
+'''
+@app.route('/mesMenorQtdVitimasEstado')
+def mesMenorQtdVitimasEstado():
+    UF = request.args.get('UF', type = str)
+    TipoCrime = request.args.get('TipoCrime', type = str)
+    Ano = request.args.get('Ano', type = int)
+    vitimas = mongo.db.vitimas.find({'UF': UF,'TipoCrime':TipoCrime,'Ano':Ano},{'UF':1,'Mês':1,'Vítimas':1,'_id':0}).sort([('Vítimas',1)]).limit(1)
+    resp = dumps(vitimas)
+    return resp
 
 
 
