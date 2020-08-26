@@ -206,21 +206,70 @@ def mesMenorQtdVitimasEstado():
 '''
 
 '''
-    /municipios/vitimas -> Exibir todos os municípios e número de vítimas
-    /municipios/vitimas?uf=<SIGLA_UF> -> Exibir todos os municípios e número de vítimas a partir da UF
+    /municipios/ -> Retorna todos os registros
+        /municipios/
 '''
-@app.route('/municipios/vitimas')
-def filtraMunicipiosPorEstado():
-    uf = request.args.get('uf', type = str)
+@app.route('/municipios/')
+def dump_registros_municipios():
     municipios = pd.read_csv('./datasets/municipio_vitimas.csv') # Carrega dataset
     municipios.columns = ['municipio', 'estado', 'regiao', 'mes_ano', 'vitimas'] # Renomeia colunas (padronização)
-    if (uf != None): # Se houver na query o parâmetro uf, faça o filtro
-        municipios = municipios.query(f"estado == '{uf}'") # Filtra por estado
+    return municipios.to_json(orient='records')
+
+
+'''
+    /municipios/vitimas -> Exibir todos os municípios e número total de vítimas
+    Parâmetros: 
+            ? uf
+        Exemplo:
+            /municipios/vitimas?uf=MA
+'''
+@app.route('/municipios/vitimas')
+def total_vitimas_municipio():
+    municipios = pd.read_csv('./datasets/municipio_vitimas.csv') # Carrega dataset
+    municipios.columns = ['municipio', 'estado', 'regiao', 'mes_ano', 'vitimas'] # Renomeia colunas (padronização)
+    uf = request.args.get('uf', type = str) # Carrega o parâmetro 'uf' (não-obrigatório)
+    municipios = municipios.query(f"estado == '{uf}'") if (uf != None) else municipios  # Verifica se 'uf' existe e faz o filtro
     municipios = municipios.groupby('municipio').sum('vitimas') # Agrupa por munpicípio e soma as vítimas
-
-    print(municipios.head()) # A função head retorna os cinco primeiros (só para debugging no terminal)
-
     return municipios['vitimas'].to_json()
+
+'''
+    /municipios/periodo -> Quantidade de vítimas em determinado município de acordo com Mês/Ano.
+    Parâmetros: 
+            ? municipio & periodo & only_ano
+        Exemplo:
+            /municipios/periodo?municipio=Tutóia&periodo=jan/18&only_ano=true
+'''
+@app.route('/municipios/periodo')
+def total_vitimas_municipio_periodo():
+    municipios = pd.read_csv('./datasets/municipio_vitimas.csv') # Carrega dataset
+    municipios.columns = ['municipio', 'estado', 'regiao', 'mes_ano', 'vitimas'] # Renomeia colunas (padronização)
+    municipio = request.args.get('municipio', type = str) # Carrega o parâmetro 'município' (obrigatorio)
+    periodo = request.args.get('periodo', type = str) # Carrega o parâmetro 'periodo' (obrigatorio)
+    only_ano = request.args.get('only_ano', type = str) # Carrega o parâmetro 'periodo' (obrigatorio)
+    if (municipio != None and periodo != None): # Verifica se os dois existem
+        if (only_ano != None and only_ano == '1'): # Verifica se o usuario quer todos os meses do ano
+            municipios['ano'] = municipios['mes_ano'].str.extract(r'([0-9]{2}$)') # Cria uma nova coluna 'ano' em todos os registro
+            ano = periodo.split('/')[1] # Captura o ano do periodo desejado
+            municipios = municipios.query(f"municipio == '{municipio}' & ano == '{ano}'") # Faz o filtro
+            del municipios['ano'] # Apaga a coluna 'ano'
+        else:
+            municipios = municipios.query(f"municipio == '{municipio}' & mes_ano == '{periodo}'") # Faz o filtro
+    else:
+        return bad_request('Insira o município/período') # Parâmetros faltantes
+    return municipios.to_json(orient='records')
+
+
+'''
+    /municipios/periodo -> Quantidade de vítimas em determinado município de acordo com Mês/Ano.
+    Parâmetros: 
+            ? municipio & periodo & only_ano
+        Exemplo:
+            /municipios/periodo?municipio=Tutóia&periodo=jan/18&only_ano=true
+'''
+@app.route('/municipios/periodo')
+def total_vitimas_municipio_periodo():
+   return 'comecando..'
+
 
 @app.errorhandler(404)
 def not_found (error=None):
@@ -230,6 +279,16 @@ def not_found (error=None):
     }
     resp = jsonify(message)
     resp.status_code = 404
+    return resp
+
+
+def bad_request(mensagem):
+    message = {
+        'status': 400,
+        'message': 'Bad Request: ' + mensagem
+    }
+    resp = jsonify(message)
+    resp.status_code = 400
     return resp
 
 
