@@ -2,7 +2,8 @@ from flask import Flask,jsonify,request
 from flask_pymongo import PyMongo
 from bson.json_util import dumps
 from bson.objectid import ObjectId
-
+import pandas as pd
+import json
 
 app = Flask(__name__)
 
@@ -10,28 +11,36 @@ app.config['MONGO_URI'] = "mongodb+srv://rhuan:mongo14071f@cluster0.sxffn.mongod
 mongo = PyMongo(app)
 
 
-
-#Rota de teste que retorna todos os registros da coleção vítimas
-@app.route('/uf')
-def uf():
-    uf = mongo.db.vitimas.find()
-    resp = dumps(uf)
-    return resp
+'''
+    /estado/vitimas -> Rota de teste que retorna todos os registros da coleção vítimas
+'''
+@app.route('/estado/vitimas')
+def estadoVitimasDump():
+    vitimas = pd.read_csv('./datasets/estado_vitimas.csv')
+    vitimas.columns = ['uf', 'crime', 'ano', 'mes', 'vitimas']
+    return vitimas.to_json(orient='records')
 
 
 '''
-    Retorna o número de ocorrências de um determinado crime em um mês específico do ano em uma UF:
-    Exemplo : ocorrenciasEstado?UF=Acre&TipoCrime=Estupro&Mes=janeiro&Ano=2015
+    /estado/ocorrencias -> Retorna o número de ocorrências de um determinado crime em um mês específico do ano em uma UF:
+        Parâmetros: 
+            ? uf & crime & mes & ano
+        Exemplo:
+            /estado/ocorrencias?uf=Maranhão&crime=Estupro&ano=2015&mes=janeiro
 '''
-@app.route('/ocorrenciasEstado')
-def ocorrencias():
-    UF = request.args.get('UF', type = str)
-    TipoCrime = request.args.get('TipoCrime', type = str)
-    Mes = request.args.get('Mes', type = str)
-    Ano = request.args.get('Ano', type = int)
-    ocorrencias = mongo.db.ocorrencias.find({'UF':UF,'TipoCrime':TipoCrime,'Mês':Mes,'Ano':Ano},{'Ocorrências':1,'_id':0})
-    resp = dumps(ocorrencias)
-    return resp
+@app.route('/estado/ocorrencias')
+def FiltraEstadoOcorrencias():
+    ocorrencias = pd.read_csv('./datasets/estado_ocorrencias.csv')
+    ocorrencias.columns = ['uf', 'crime', 'ano', 'mes', 'ocorrencias']
+    uf = request.args.get('uf', type = str)
+    crime = request.args.get('crime', type = str)
+    mes = request.args.get('mes', type = str)
+    ano = request.args.get('ano', type = str)
+    ocorrencias = ocorrencias.query(f"uf == '{uf}'") if (uf != None) else ocorrencias
+    ocorrencias = ocorrencias.query(f"crime == '{crime}'") if (crime != None) else ocorrencias
+    ocorrencias = ocorrencias.query(f"mes == '{mes}'") if (mes != None) else ocorrencias
+    ocorrencias = ocorrencias.query(f"ano == '{ano}'") if (ano != None) else ocorrencias
+    return ocorrencias.to_json(orient='records')
 
 
 '''
@@ -40,8 +49,6 @@ def ocorrencias():
     Para ordem ascendente Ordem = asc
     Exemplo : rankingocorrenciasEstado?TipoCrime=Estupro&Mes=janeiro&Ano=2015&Qtd=10
 '''
-
-
 @app.route('/rankingocorrenciasEstado')
 def rankingOcorrencias():
     TipoCrime = request.args.get('TipoCrime', type = str)
@@ -193,8 +200,27 @@ def mesMenorQtdVitimasEstado():
     resp = dumps(vitimas)
     return resp
 
+''' 
+    ROTAS PARA MUNICIPIOS COLLECTION: localhost:5000/municipios/
+        Município |	Sigla UF | Região | Mês/Ano | Vítimas
+'''
 
+'''
+    /municipios/vitimas -> Exibir todos os municípios e número de vítimas
+    /municipios/vitimas?uf=<SIGLA_UF> -> Exibir todos os municípios e número de vítimas a partir da UF
+'''
+@app.route('/municipios/vitimas')
+def filtraMunicipiosPorEstado():
+    uf = request.args.get('uf', type = str)
+    municipios = pd.read_csv('./datasets/municipio_vitimas.csv') # Carrega dataset
+    municipios.columns = ['municipio', 'estado', 'regiao', 'mes_ano', 'vitimas'] # Renomeia colunas (padronização)
+    if (uf != None): # Se houver na query o parâmetro uf, faça o filtro
+        municipios = municipios.query(f"estado == '{uf}'") # Filtra por estado
+    municipios = municipios.groupby('municipio').sum('vitimas') # Agrupa por munpicípio e soma as vítimas
 
+    print(municipios.head()) # A função head retorna os cinco primeiros (só para debugging no terminal)
+
+    return municipios['vitimas'].to_json()
 
 @app.errorhandler(404)
 def not_found (error=None):
