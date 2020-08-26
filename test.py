@@ -2,7 +2,8 @@ from flask import Flask,jsonify,request
 from flask_pymongo import PyMongo
 from bson.json_util import dumps
 from bson.objectid import ObjectId
-
+import pandas as pd
+import json
 
 app = Flask(__name__)
 
@@ -193,8 +194,27 @@ def mesMenorQtdVitimasEstado():
     resp = dumps(vitimas)
     return resp
 
+''' 
+    ROTAS PARA MUNICIPIOS COLLECTION: localhost:5000/municipios/
+        Município |	Sigla UF | Região | Mês/Ano | Vítimas
+'''
 
+'''
+    /municipios/vitimas -> Exibir todos os municípios e número de vítimas
+    /municipios/vitimas?uf=<SIGLA_UF> -> Exibir todos os municípios e número de vítimas a partir da UF
+'''
+@app.route('/municipios/vitimas')
+def filtraMunicipiosPorEstado():
+    uf = request.args.get('uf', type = str)
+    municipios = pd.read_csv('./datasets/municipio.csv') # Carrega dataset
+    municipios.columns = ['municipio', 'estado', 'regiao', 'mes_ano', 'vitimas'] # Renomeia colunas (padronização)
+    if (uf != None): # Se houver na query o parâmetro uf, faça o filtro
+        municipios = municipios.query(f"estado == '{uf}'") # Filtra por estado
+    municipios = municipios.groupby('municipio').sum('vitimas') # Agrupa por munpicípio e soma as vítimas
 
+    print(municipios.head()) # A função head retorna os cinco primeiros (só para debugging no terminal)
+
+    return municipios['vitimas'].to_json()
 
 @app.errorhandler(404)
 def not_found (error=None):
