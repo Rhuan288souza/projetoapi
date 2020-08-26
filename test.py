@@ -260,15 +260,27 @@ def total_vitimas_municipio_periodo():
 
 
 '''
-    /municipios/periodo -> Quantidade de vítimas em determinado município de acordo com Mês/Ano.
+    /municipios/ranking_estado -> Município(s) com os 5 maiores/menores números de vítimas de cada estado.
     Parâmetros: 
-            ? municipio & periodo & only_ano
+            ? uf 
         Exemplo:
-            /municipios/periodo?municipio=Tutóia&periodo=jan/18&only_ano=true
+            /municipios/ranking_estado?uf=MA
 '''
-@app.route('/municipios/periodo')
-def total_vitimas_municipio_periodo():
-   return 'comecando..'
+@app.route('/municipios/ranking_estado')
+def ranking_vitimas_municipios_uf():
+    municipios = pd.read_csv('./datasets/municipio_vitimas.csv') # Carrega dataset
+    municipios.columns = ['municipio', 'estado', 'regiao', 'mes_ano', 'vitimas'] # Renomeia colunas (padronização)
+    uf = request.args.get('uf', type = str) # Carrega o parâmetro 'estado' (obrigatorio)
+    if (uf != None): # Verifica se os dois existem
+        municipios = municipios.query(f"estado == '{uf}'") # Faz o filtro
+        municipios = municipios.groupby('municipio').sum('vitimas')
+        municipios = municipios.sort_values('vitimas', ascending=False)
+        maiores = municipios.iloc[0:10]['vitimas']
+        menores = municipios.iloc[-10:-1]['vitimas']
+        result = { 'maiores': maiores, 'menores': menores }
+    else:
+        return bad_request('Insira o estado') # Parâmetros faltantes
+    return dumps(result)
 
 
 @app.errorhandler(404)
