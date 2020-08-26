@@ -283,6 +283,17 @@ def ranking_vitimas_municipios_uf():
     return dumps(result)
 
 
+'''
+    /municipios/ranking_regiao -> Ranking das regiões com números de vítimas.
+'''
+@app.route('/municipios/ranking_regiao')
+def ranking_vitimas_municipios_regiao():
+    municipios = pd.read_csv('./datasets/municipio_vitimas.csv') # Carrega dataset
+    municipios.columns = ['municipio', 'estado', 'regiao', 'mes_ano', 'vitimas'] # Renomeia colunas (padronização)
+    municipios = municipios.groupby('regiao').sum('vitimas')
+    return municipios['vitimas'].to_json()
+
+
 @app.errorhandler(404)
 def not_found (error=None):
     message = {
