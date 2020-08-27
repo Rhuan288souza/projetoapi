@@ -294,6 +294,26 @@ def ranking_vitimas_municipios_regiao():
     return municipios['vitimas'].to_json()
 
 
+'''
+    /municipios/ranking_periodo_municipio -> O Mês/Ano ou Ano que apresentou o maior número de vítimas em cada município.
+'''
+@app.route('/municipios/ranking_periodo_municipio')
+def ranking_vitimas_periodo_municipio():
+    municipios = pd.read_csv('./datasets/municipio_vitimas.csv') # Carrega dataset
+    municipios.columns = ['municipio', 'estado', 'regiao', 'mes_ano', 'vitimas'] # Renomeia colunas (padronização)
+
+    results = pd.DataFrame(columns=['municipio', 'mes_ano', 'vitimas']) # Cria um dataframe para receber os resultados
+    for municipio in municipios['municipio'].unique().tolist():
+        if (municipio.find('\'') != -1): # Infelizmente, os municípios que tiverem uma aspas simples será descartado, precisaria tratar antes do filtro
+            continue;
+        meses_municipio = municipios.query(f"municipio == '{municipio}'") 
+        meses_municipio = meses_municipio.sort_values('vitimas', ascending=False)
+        row = { 'municipio': municipio, 'mes_ano': meses_municipio.iloc[0]['mes_ano'], 'vitimas': meses_municipio.iloc[0]['vitimas'] }
+        results = results.append(row, ignore_index=True)
+
+    return results.to_json(orient='records')
+
+
 @app.errorhandler(404)
 def not_found (error=None):
     message = {
