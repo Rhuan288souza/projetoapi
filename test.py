@@ -327,6 +327,21 @@ def livre_vitimas():
     return municipios['municipio'].to_json(orient='records')
 
 
+'''
+    /municipios/recordes_vitimas -> Municípios que apresentaram o maior número de vítimas de acordo com o Mês/Ano.
+'''
+@app.route('/municipios/recordes_vitimas')
+def recordes_vitimas():
+    municipios = pd.read_csv('./datasets/municipio_vitimas.csv')
+    municipios.columns = ['municipio', 'estado', 'regiao', 'mes_ano', 'vitimas'] 
+    results = pd.DataFrame(columns=['mes_ano', 'municipio', 'vitimas'])
+    for mes_ano in municipios['mes_ano'].unique().tolist():
+        meses_municipio = municipios.query(f"mes_ano == '{mes_ano}'") 
+        meses_municipio = meses_municipio.sort_values('vitimas', ascending=False)
+        row = { 'mes_ano': mes_ano, 'municipio': meses_municipio.iloc[0]['municipio'], 'vitimas': meses_municipio.iloc[0]['vitimas'] }
+        results = results.append(row, ignore_index=True)
+    return results.to_json(orient='records')
+
 
 @app.errorhandler(404)
 def not_found (error=None):
