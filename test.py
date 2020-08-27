@@ -313,6 +313,20 @@ def ranking_vitimas_periodo_municipio():
 
     return results.to_json(orient='records')
 
+'''
+    /municipios/livre_vitimas -> Municípios que não apresentaram vítimas em determinado Mês/Ano.
+    Parâmetros: 
+            ? mes_ano 
+'''
+@app.route('/municipios/livre_vitimas')
+def livre_vitimas():
+    municipios = pd.read_csv('./datasets/municipio_vitimas.csv') # Carrega dataset
+    municipios.columns = ['municipio', 'estado', 'regiao', 'mes_ano', 'vitimas'] # Renomeia colunas (padronização)
+    mes_ano = request.args.get('mes_ano', type = str) # Carrega o parâmetro 'mes_ano' (não obrigatorio)
+    municipios = municipios.query(f"vitimas == 0 & mes_ano == '{mes_ano}'") if (mes_ano != None) else municipios.query('vitimas == 0')
+    return municipios['municipio'].to_json(orient='records')
+
+
 
 @app.errorhandler(404)
 def not_found (error=None):
