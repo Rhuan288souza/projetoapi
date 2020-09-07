@@ -133,7 +133,7 @@ def ocorrenciasPorEstado():
 
 '''
     Tipo de crime com maior quantidade de ocorrências por estado em determinado ano
-    Exemplo : ocorrenciasEstado?UF=Acre&TipoCrime=Estupro&Mes=janeiro&Ano=2015
+    Exemplo : tipoCrimeMaiorOcorrenciasEstado?UF=Acre&Mes=janeiro&Ano=2015
 '''
 @app.route('/tipoCrimeMaiorOcorrenciasEstado')
 def tipoCrimeMaiorOcorrenciasEstado():
@@ -144,8 +144,8 @@ def tipoCrimeMaiorOcorrenciasEstado():
     return resp
 
     '''
-    Tipo de crime com maior quantidade de ocorrências por estado em determinado ano
-    Exemplo : ocorrenciasEstado?UF=Acre&TipoCrime=Estupro&Mes=janeiro&Ano=2015
+    Tipo de crime com menor quantidade de ocorrências por estado em determinado ano
+    Exemplo : tipoCrimeMenorOcorrenciasEstado?UF=Acre&Mes=janeiro&Ano=2015
 '''
 @app.route('/tipoCrimeMenorOcorrenciasEstado')
 def tipoCrimeMenorOcorrenciasEstado():
@@ -159,7 +159,7 @@ def tipoCrimeMenorOcorrenciasEstado():
 
 '''
     Retorna o número de vítimas de um determinado crime em um mês específico do ano em uma UF:
-    Exemplo : ocorrenciasEstado?UF=Acre&TipoCrime=Estupro&Mes=janeiro&Ano=2015
+    Exemplo : /vitimasEstado?UF=Acre&TipoCrime=Homicídio%20doloso&Ano=2015&Mes=janeiro
 '''
 @app.route('/vitimasEstado')
 def vitimas():
@@ -175,7 +175,7 @@ def vitimas():
 '''
     Mês com maior quantidade de vítimas de determinado crime, estado e ano
   
-    Exemplo : mesMaiorQtdOcorrenciasEstado?UF=Acre&TipoCrime=Estupro&Ano=2015
+    Exemplo : mesMaiorQtdVitimasEstado?UF=Acre&TipoCrime=Homicídio%20doloso&Ano=2015
 '''
 @app.route('/mesMaiorQtdVitimasEstado')
 def mesMaiorQtdVitimasEstado():
@@ -189,7 +189,7 @@ def mesMaiorQtdVitimasEstado():
     '''
     Mês com menor quantidade de vítimas de determinado crime, estado e ano
   
-    Exemplo : mesMaiorQtdOcorrenciasEstado?UF=Acre&TipoCrime=Estupro&Ano=2015
+    Exemplo : /mesMenorQtdVitimasEstado?UF=Acre&TipoCrime=Homicídio%20doloso&Ano=2015
 '''
 @app.route('/mesMenorQtdVitimasEstado')
 def mesMenorQtdVitimasEstado():
@@ -316,7 +316,9 @@ def ranking_vitimas_periodo_municipio():
 '''
     /municipios/livre_vitimas -> Municípios que não apresentaram vítimas em determinado Mês/Ano.
     Parâmetros: 
-            ? mes_ano 
+            ? mes_ano
+        Exemplo:
+        /municipios/livre_vitimas?mes_ano=jan/18
 '''
 @app.route('/municipios/livre_vitimas')
 def livre_vitimas():
