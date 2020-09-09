@@ -1,0 +1,11 @@
+Flask==1.1.2
+  - click [required: >=5.1, installed: 7.1.2]
+  - itsdangerous [required: >=0.24, installed: 1.1.0]
+  - Jinja2 [required: >=2.10.1, installed: 2.11.2]
+    - MarkupSafe [required: >=0.23, installed: 1.1.1]
+  - Werkzeug [required: >=0.15, installed: 1.0.1]
+pandas==1.1.1
+  - numpy [required: >=1.15.4, installed: 1.19.1]
+  - python-dateutil [required: >=2.7.3, installed: 2.8.1]
+    - six [required: >=1.5, installed: 1.15.0]
+  - pytz [required: >=2017.2, installed: 2020.1]
