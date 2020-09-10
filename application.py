@@ -143,42 +143,61 @@ def tipoCrimeMenorOcorrenciasEstado():
 
 
 '''
-    Retorna o número de vítimas de um determinado crime em um mês específico do ano em uma UF:
-    Exemplo : /vitimasEstado?UF=Acre&TipoCrime=Homicídio%20doloso&Ano=2015&Mes=janeiro 
+    /estado/vitimas/ranking_crime -> Retorna o número de vítimas de um determinado crime em um mês específico do ano em uma UF:
+    Parâmetros: 
+        - tipo_crime - obrigatorio
+        - uf - obrigatorio
+        - ano - obrigatorio
+
+    Exemplo:
+        /estado/vitimas/ranking_crime?tipo_crime=Homicídio%20doloso&uf=Bahia&ano=2017 
 '''
-@app.route('/vitimasEstado')
-def vitimas():
-    UF = request.args.get('UF', type = str)
-    TipoCrime = request.args.get('TipoCrime', type = str)
-    Mes = request.args.get('Mes', type = str)
-    Ano = request.args.get('Ano', type = int)
-
-    return False
+# @app.route('/estado/vitimas/')
+@app.route('/estado/vitimas/ranking_crime')
+def ranking_crime_vitimas():
+    estados = pd.read_csv('./datasets/estado_vitimas.csv') # Carrega dataset
+    estados.columns = ['uf', 'tipo_crime', 'ano', 'mes', 'vitimas'] # Renomeia colunas (padronização)
+    tipo_crime = request.args.get('tipo_crime', type=str) # Crime cometido
+    uf = request.args.get('uf', type=str) # Estado (opcional)
+    ano = request.args.get('ano', type=str) # Ano (opcional)
+    estados = estados.query(f"tipo_crime == '{tipo_crime}'") # Filtra a UF
+    estados = estados.query(f"uf == '{uf}'") # Filtra a UF
+    estados = estados.query(f"ano == '{ano}'") # Filtra o ano
+    estados = estados.groupby('tipo_crime').sum('vitimas') # Agrupa por tipo de crime e soma as vítimas
+    payload = {
+        'estado': uf,
+        'ano': ano,
+        'crime': tipo_crime,
+        'vitimas': str(estados['vitimas'][tipo_crime])
+    }
+    return payload # Retorna o primeiro (maior/menor dependendo da selecao)
 
 
 '''
-    Mês com maior quantidade de vítimas de determinado crime, estado e ano
-    Exemplo : mesMaiorQtdVitimasEstado?UF=Acre&TipoCrime=Homicídio%20doloso&Ano=2015 
+    /estado/vitimas/crime_mes -> Mês com (menor ou maior) quantidade de vítimas de determinado crime. Estado, Ano (opcionais)
+    Parâmetros: 
+        - tipo_crime - obrigatorio
+        - uf - opcional
+        - ano - opcional
+        - maior - opcional (se for 1, retorna o maior)
+    Exemplo:
+        /estado/vitimas/crime_mes?tipo_crime=Homicídio%20doloso&uf=Bahia&ano=2017&maior=1   
 '''
-@app.route('/mesMaiorQtdVitimasEstado')
-def mesMaiorQtdVitimasEstado():
-    UF = request.args.get('UF', type = str)
-    TipoCrime = request.args.get('TipoCrime', type = str)
-    Ano = request.args.get('Ano', type = int)
+# @app.route('/mesMenorQtdVitimasEstado')
+@app.route('/estado/vitimas/crime_mes')
+def mes_menor_crime_vitimas():
+    estados = pd.read_csv('./datasets/estado_vitimas.csv') # Carrega dataset
+    estados.columns = ['uf', 'tipo_crime', 'ano', 'mes', 'vitimas'] # Renomeia colunas (padronização)
+    maior = request.args.get('maior', type=str) # Se houver 'maior', retorna o mes com a maior quantidade de vítimas
+    tipo_crime = request.args.get('tipo_crime', type=str) # Crime cometido
+    uf = request.args.get('uf', type=str) # Estado (opcional)
+    ano = request.args.get('ano', type=str) # Ano (opcional)
+    estados = estados.query(f"tipo_crime == '{tipo_crime}'")  # Filtra os crimes
+    estados = estados.sort_values('vitimas', ascending=False) if (maior == '1') else estados # Pesquisa se foi requisitado o maior 
+    estados = estados.query(f"uf == '{uf}'") if (uf != None) else estados  # Se houver estados filtra
+    estados = estados.query(f"ano == '{ano}'") if (ano != None) else estados  # Se houver ano filtra
+    return estados[0:1].to_json(orient='records') # Retorna o primeiro (maior/menor dependendo da selecao)
 
-    return False
-
-'''
-    Mês com menor quantidade de vítimas de determinado crime, estado e ano
-    Exemplo : /mesMenorQtdVitimasEstado?UF=Acre&TipoCrime=Homicídio%20doloso&Ano=2015 
-'''
-@app.route('/mesMenorQtdVitimasEstado')
-def mesMenorQtdVitimasEstado():
-    UF = request.args.get('UF', type = str)
-    TipoCrime = request.args.get('TipoCrime', type = str)
-    Ano = request.args.get('Ano', type = int)
-
-    return False
 
 ''' 
     ROTAS PARA MUNICIPIOS COLLECTION: localhost:5000/municipios/
