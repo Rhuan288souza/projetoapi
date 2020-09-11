@@ -38,20 +38,34 @@ def FiltraEstadoOcorrencias():
 
 
 '''
-    Top X de estados com maior número ou menor número de ocorrências por crime em um determinado mês e ano
+    Top X de estados com maior número de ocorrências por crime em um determinado mês e ano
     Por padrão mostra em ordem descendente
     Para ordem ascendente Ordem = asc
-    Exemplo : rankingocorrenciasEstado?TipoCrime=Estupro&Mes=janeiro&Ano=2015&Qtd=10
+    Exemplo : rankingocorrenciasEstado?TipoCrime=Estupro&Mes=janeiro&Tipo=Maior&Ano=2015&Qtd=10
 '''
 @app.route('/rankingocorrenciasEstado')
 def rankingOcorrencias():
-    TipoCrime = request.args.get('TipoCrime', type = str)
-    Mes = request.args.get('Mes', type = str)
-    Ano = request.args.get('Ano', type = int)
-    Quantidade = request.args.get('Qtd',type = int)
-    Ordem = request.args.get('Ordem',type = str)
+    ocorrencias = pd.read_csv('./datasets/estado_ocorrencias.csv')
+    ocorrencias.columns = ['uf', 'TipoCrime', 'ano', 'mes', 'ocorrencias']
 
-    return False
+    Quantidade = request.args.get('Qtd',type = int)
+    #Ordem = request.args.get('Ordem',type = str)
+    TipoCrime = request.args.get('TipoCrime', type = str)
+    mes = request.args.get('Mes', type = str)
+    ano = request.args.get('Ano', type = str)
+    Tipo = request.args.get('Tipo', type = str)
+
+    ocorrencias = ocorrencias.query(f"TipoCrime == '{TipoCrime}'") if (TipoCrime != None) else ocorrencias
+    ocorrencias = ocorrencias.query(f"mes == '{mes}'") if (mes != None) else ocorrencias
+    ocorrencias = ocorrencias.query(f"ano == '{ano}'") if (ano != None) else ocorrencias
+    if Tipo == 'Maior':
+        ocorrencias = ocorrencias.sort_values('ocorrencias', ascending=False)
+        ocorrencias = ocorrencias[:Quantidade]
+    elif Tipo == 'Menor':
+        ocorrencias = ocorrencias.sort_values('ocorrencias', ascending=True)
+        ocorrencias = ocorrencias[:Quantidade]
+
+    return ocorrencias.to_json(orient='records')
 
 
 
