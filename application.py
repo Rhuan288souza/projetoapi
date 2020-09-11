@@ -6,6 +6,20 @@ application = app = Flask(__name__)
 
 
 '''
+   ESTADOS:
+        1. /estado/vitimas                   -> estadoVitimasDump()
+        2. /estado/ocorrencias               -> FiltraEstadoOcorrencias()
+        3. /rankingocorrenciasEstado         -> rankingOcorrencias()
+        4. /mesMaiorQtdOcorrenciasEstado     -> mesQtdMaiorOcorrencias()
+        5. /mesMenorQtdOcorrenciasEstado     -> mesQtdMenorOcorrencias()
+        6. /ocorrenciasPorEstado             -> ocorrenciasPorEstado()
+        7. /tipoCrimeMaiorOcorrenciasEstado  -> tipoCrimeMaiorOcorrenciasEstado()
+        8. /tipoCrimeMenorOcorrenciasEstado  -> tipoCrimeMenorOcorrenciasEstado()
+        9. /estado/vitimas/ranking_crime     -> ranking_crime_vitimas()
+        10. /estado/vitimas/crime_mes        -> mes_menor_crime_vitimas()
+'''
+
+'''
     /estado/vitimas -> Rota de teste que retorna todos os registros da coleção vítimas
 '''
 @app.route('/estado/vitimas')
@@ -38,10 +52,15 @@ def FiltraEstadoOcorrencias():
 
 
 '''
-    Top X de estados com maior ou Menor número de ocorrências por crime em um determinado mês e ano
-    Por padrão mostra em ordem descendente
-    Para ordem ascendente Ordem = asc
-    Exemplo : /rankingocorrenciasEstado?TipoCrime=Estupro&Mes=janeiro&Tipo=Menor&Ano=2015&Qtd=3
+    /rankingocorrenciasEstado -> Top X de estados com Maior ou Menor número de ocorrências por crime em um determinado mês e ano
+    
+        - Por padrão mostra em ordem descendente
+        - Para ordem ascendente Ordem = asc
+    
+        Parâmetros: 
+            ? TipoCrime & Mes & Tipo & Ano
+        Exemplo:
+            /rankingocorrenciasEstado?TipoCrime=Estupro&Mes=janeiro&Tipo=Menor&Ano=2015&Qtd=3
 '''
 @app.route('/rankingocorrenciasEstado')
 def rankingOcorrencias():
@@ -69,9 +88,12 @@ def rankingOcorrencias():
 
 
 '''
-    Mês com maior quantidade de ocorrências de determinado crime, estado e ano
-  
-    Exemplo : mesMaiorQtdOcorrenciasEstado?UF=Acre&TipoCrime=Estupro&Ano=2015
+    /mesMaiorQtdOcorrenciasEstado -> Mês com maior quantidade de ocorrências de determinado crime, estado e ano.
+
+        Parâmetros: 
+            ? uf & TipoCrime & Ano
+        Exemplo: 
+            /mesMaiorQtdOcorrenciasEstado?uf=Acre&TipoCrime=Estupro&Ano=2015
 '''
 @app.route('/mesMaiorQtdOcorrenciasEstado')
 def mesQtdMaiorOcorrencias():
@@ -93,9 +115,12 @@ def mesQtdMaiorOcorrencias():
 
 
 '''
-    Mês com menor quantidade de ocorrências de determinado crime, estado e ano
-  
-    Exemplo : mesMenorQtdOcorrenciasEstado?uf=Acre&TipoCrime=Estupro&Ano=2015
+    /mesMenorQtdOcorrenciasEstado -> Mês com menor quantidade de ocorrências de determinado crime, estado e ano
+
+        Parâmetros: 
+            ? uf & TipoCrime & Ano
+        Exemplo: 
+            /mesMenorQtdOcorrenciasEstado?uf=Acre&TipoCrime=Estupro&Ano=2015
 '''
 @app.route('/mesMenorQtdOcorrenciasEstado')
 def mesQtdMenorOcorrencias():
@@ -117,8 +142,12 @@ def mesQtdMenorOcorrencias():
 
 
 '''
-    Todos os sobre a ocorrência de determinado crime por estado
-    Exemplo : ocorrenciasPorEstado?TipoCrime=Estupro
+    /ocorrenciasPorEstado -> Todos dados os sobre a ocorrência de determinado crime por estado
+        
+        Parâmetros: 
+            ? TipoCrime
+        Exemplo: 
+            /ocorrenciasPorEstado?TipoCrime=Estupro
 '''
 @app.route('/ocorrenciasPorEstado')
 def ocorrenciasPorEstado():
@@ -133,8 +162,12 @@ def ocorrenciasPorEstado():
 
 
 '''
-    Tipo de crime com maior quantidade de ocorrências por estado em determinado ano
-    Exemplo : /tipoCrimeMaiorOcorrenciasEstado?uf=Ceará&Ano=2015
+    /tipoCrimeMaiorOcorrenciasEstado -> Tipo de crime com maior quantidade de ocorrências por estado em determinado ano
+    
+        Parâmetros: 
+            ? uf & Ano
+        Exemplo : 
+            /tipoCrimeMaiorOcorrenciasEstado?uf=Ceará&Ano=2015
 '''
 @app.route('/tipoCrimeMaiorOcorrenciasEstado')
 def tipoCrimeMaiorOcorrenciasEstado():
@@ -159,8 +192,12 @@ def tipoCrimeMaiorOcorrenciasEstado():
 
 
 '''
-    Tipo de crime com menor quantidade de ocorrências por estado em determinado ano 
-    Exemplo : /tipoCrimeMenorOcorrenciasEstado?uf=Acre&Ano=2015 
+    /tipoCrimeMenorOcorrenciasEstado -> Tipo de crime com menor quantidade de ocorrências por estado em determinado ano
+    
+        Parâmetros: 
+            ? uf & Ano
+        Exemplo : 
+            /tipoCrimeMenorOcorrenciasEstado?uf=Acre&Ano=2015 
 '''
 @app.route('/tipoCrimeMenorOcorrenciasEstado')
 def tipoCrimeMenorOcorrenciasEstado():
@@ -186,13 +223,14 @@ def tipoCrimeMenorOcorrenciasEstado():
 
 '''
     /estado/vitimas/ranking_crime -> Retorna o número de vítimas de um determinado crime em um mês específico do ano em uma UF:
-    Parâmetros: 
-        - tipo_crime - obrigatorio
-        - uf - obrigatorio
-        - ano - obrigatorio
-
-    Exemplo:
-        /estado/vitimas/ranking_crime?tipo_crime=Homicídio%20doloso&uf=Bahia&ano=2017 
+    
+        Parâmetros: 
+            ? tipo_crime & uf & ano
+                - tipo_crime - obrigatorio
+                - uf - obrigatorio
+                - ano - obrigatorio
+        Exemplo:
+            /estado/vitimas/ranking_crime?tipo_crime=Homicídio%20doloso&uf=Bahia&ano=2017 
 '''
 # @app.route('/estado/vitimas/')
 @app.route('/estado/vitimas/ranking_crime')
@@ -218,12 +256,14 @@ def ranking_crime_vitimas():
 '''
     /estado/vitimas/crime_mes -> Mês com (menor ou maior) quantidade de vítimas de determinado crime. Estado, Ano (opcionais)
     Parâmetros: 
-        - tipo_crime - obrigatorio
-        - uf - opcional
-        - ano - opcional
-        - maior - opcional (se for 1, retorna o maior)
+        ? tipo_crime & uf & ano
+            - tipo_crime - obrigatorio
+            - uf - opcional
+            - ano - opcional
+            - maior - opcional (se for 1, retorna o maior)
     Exemplo:
-        /estado/vitimas/crime_mes?tipo_crime=Homicídio%20doloso&uf=Bahia&ano=2017&maior=1   
+        /estado/vitimas/crime_mes?tipo_crime=Homicídio%20doloso&uf=Bahia&ano=2017&maior=1 
+        /estado/vitimas/crime_mes?tipo_crime=Homicídio%20doloso&uf=Bahia&ano=2017  
 '''
 # @app.route('/mesMenorQtdVitimasEstado')
 @app.route('/estado/vitimas/crime_mes')
@@ -241,9 +281,23 @@ def mes_menor_crime_vitimas():
     return estados[0:1].to_json(orient='records') # Retorna o primeiro (maior/menor dependendo da selecao)
 
 
+''' 
+    ROTAS PARA MUNICIPIOS COLLECTION: localhost:5000/municipios/
+        Município |	Sigla UF | Região | Mês/Ano | Vítimas
+    
+    MUNICÍPIO:
+        1. /municipios/                             -> dump_registros_municipios()
+        2. /municipios/vitimas                      -> total_vitimas_municipio()
+        3. /municipios/periodo                      -> total_vitimas_municipio_periodo()
+        4. /municipios/ranking_estado               -> ranking_vitimas_municipios_uf()
+        5. /municipios/ranking_regiao               -> ranking_vitimas_municipios_regiao()
+        6. /municipios/ranking_periodo_municipio    -> ranking_vitimas_periodo_municipio()
+        7. /municipios/livre_vitimas                -> livre_vitimas()
+        8. /municipios/recordes_vitimas             -> recordes_vitimas()
+'''
+
 '''
     /municipios/ -> Retorna todos os registros
-        /municipios/
 '''
 @app.route('/municipios/')
 def dump_registros_municipios():
@@ -254,7 +308,7 @@ def dump_registros_municipios():
 
 '''
     /municipios/vitimas -> Exibir todos os municípios e número total de vítimas
-    Parâmetros: 
+        Parâmetros: 
             ? uf
         Exemplo:
             /municipios/vitimas?uf=MA
@@ -271,7 +325,7 @@ def total_vitimas_municipio():
 
 '''
     /municipios/periodo -> Quantidade de vítimas em determinado município de acordo com Mês/Ano.
-    Parâmetros: 
+        Parâmetros: 
             ? municipio & periodo & only_ano
         Exemplo:
             /municipios/periodo?municipio=Tutóia&periodo=jan/18&only_ano=true
@@ -298,7 +352,7 @@ def total_vitimas_municipio_periodo():
 
 '''
     /municipios/ranking_estado -> Município(s) com os 5 maiores/menores números de vítimas de cada estado.
-    Parâmetros: 
+        Parâmetros: 
             ? uf 
         Exemplo:
             /municipios/ranking_estado?uf=MA
@@ -352,10 +406,10 @@ def ranking_vitimas_periodo_municipio():
 
 '''
     /municipios/livre_vitimas -> Municípios que não apresentaram vítimas em determinado Mês/Ano.
-    Parâmetros: 
-        ? mes_ano 
-    Exemplo: 
-        /municipios/livre_vitimas?mes_ano=jan/18
+        Parâmetros: 
+            ? mes_ano 
+        Exemplo: 
+            /municipios/livre_vitimas?mes_ano=jan/18
 '''
 @app.route('/municipios/livre_vitimas')
 def livre_vitimas():
