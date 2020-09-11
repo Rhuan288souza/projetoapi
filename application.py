@@ -92,13 +92,10 @@ def mesQtdMaiorOcorrencias():
     return ocorrencias.to_json(orient='records')
 
 
-
-
-
 '''
     Mês com menor quantidade de ocorrências de determinado crime, estado e ano
   
-    Exemplo : mesMenorQtdOcorrenciasEstado?UF=Acre&TipoCrime=Estupro&Ano=2015
+    Exemplo : mesMenorQtdOcorrenciasEstado?uf=Acre&TipoCrime=Estupro&Ano=2015
 '''
 @app.route('/mesMenorQtdOcorrenciasEstado')
 def mesQtdMenorOcorrencias():
@@ -120,28 +117,6 @@ def mesQtdMenorOcorrencias():
 
 
 '''
-    Quantidade de ocorrências por ano de um determinado estado
-    db.ocorrencias.aggregate([{$match:{UF:"Acre"}},{$group:{_id:"$Ano",total:{$sum:"$Ocorrências"}}},])
-    Exemplo : mesMenorQtdOcorrenciasEstado?UF=Acre&TipoCrime=Estupro&Ano=2015
-'''
-
-
-'''
-    Quantidade anual de ocorrências por estado
-    Soma as quantidades de ocorrência de determinado crime
-    Exemplo : qtdOcorrenciasPorAnoEstado?Ano=2015
-    @app.route('/qtdOcorrenciasPorAnoEstado')
-    def qtdCrimePorAnoEstado():
-    TipoCrime = request.args.get('TipoCrime', type = str)
-    retorno = mongo.db.ocorrencias.aggregate([{'$match':{'TipoCrime':TipoCrime}},{'$group':{'_id':'$UF','total':{'$sum':"$Ocorrências"}}},])
-    resp = dumps(retorno)
-    return resp
-'''
-
-
-
-
-'''
     Todos os sobre a ocorrência de determinado crime por estado
     Exemplo : ocorrenciasPorEstado?TipoCrime=Estupro
 '''
@@ -159,27 +134,54 @@ def ocorrenciasPorEstado():
 
 '''
     Tipo de crime com maior quantidade de ocorrências por estado em determinado ano
-    Exemplo : tipoCrimeMaiorOcorrenciasEstado?UF=Acre&Ano=2015 
+    Exemplo : /tipoCrimeMaiorOcorrenciasEstado?uf=Ceará&Ano=2015
 '''
 @app.route('/tipoCrimeMaiorOcorrenciasEstado')
 def tipoCrimeMaiorOcorrenciasEstado():
-    UF = request.args.get('UF', type = str)
-    Ano = request.args.get('Ano', type = int)
+    ocorrencias = pd.read_csv('./datasets/estado_ocorrencias.csv')
+    ocorrencias.columns = ['uf', 'TipoCrime', 'ano', 'mes', 'ocorrencias']
 
-    return False
+    uf = request.args.get('uf', type = str)
+    ano = request.args.get('Ano', type = str)
+
+    ocorrencias = ocorrencias.query(f"uf == '{uf}'") if (uf != None) else ocorrencias
+    ocorrencias = ocorrencias.query(f"ano == '{ano}'") if (ano != None) else ocorrencias
+    ocorrencias = ocorrencias.groupby(['TipoCrime']).agg(['sum']).reset_index()    
+    ocorrencias.columns = ocorrencias.columns.droplevel()
+    ocorrencias.columns = ['TipoCrime','uf','ano','mes','ocorrencias']
+    del ocorrencias['mes']
+    ocorrencias = ocorrencias.sort_values('ocorrencias', ascending=False)
+    ocorrencias = ocorrencias[:1]
+    ocorrencias['uf'] = uf
+    ocorrencias['ano'] = ano
+
+    return ocorrencias.to_json(orient='records')
 
 
 '''
     Tipo de crime com menor quantidade de ocorrências por estado em determinado ano 
-    Exemplo : tipoCrimeMenorOcorrenciasEstado?UF=Acre&Ano=2015 
+    Exemplo : /tipoCrimeMenorOcorrenciasEstado?uf=Acre&Ano=2015 
 '''
 @app.route('/tipoCrimeMenorOcorrenciasEstado')
 def tipoCrimeMenorOcorrenciasEstado():
-    UF = request.args.get('UF', type = str)
-    Ano = request.args.get('Ano', type = int)
+    ocorrencias = pd.read_csv('./datasets/estado_ocorrencias.csv')
+    ocorrencias.columns = ['uf', 'TipoCrime', 'ano', 'mes', 'ocorrencias']
 
-    return False
+    uf = request.args.get('uf', type = str)
+    ano = request.args.get('Ano', type = str)
 
+    ocorrencias = ocorrencias.query(f"uf == '{uf}'") if (uf != None) else ocorrencias
+    ocorrencias = ocorrencias.query(f"ano == '{ano}'") if (ano != None) else ocorrencias
+    ocorrencias = ocorrencias.groupby(['TipoCrime']).agg(['sum']).reset_index()    
+    ocorrencias.columns = ocorrencias.columns.droplevel()
+    ocorrencias.columns = ['TipoCrime','uf','ano','mes','ocorrencias']
+    del ocorrencias['mes']
+    ocorrencias = ocorrencias.sort_values('ocorrencias', ascending=True)
+    ocorrencias = ocorrencias[:1]
+    ocorrencias['uf'] = uf
+    ocorrencias['ano'] = ano
+
+    return ocorrencias.to_json(orient='records')
 
 
 '''
@@ -239,11 +241,6 @@ def mes_menor_crime_vitimas():
     return estados[0:1].to_json(orient='records') # Retorna o primeiro (maior/menor dependendo da selecao)
 
 
-''' 
-    ROTAS PARA MUNICIPIOS COLLECTION: localhost:5000/municipios/
-        Município |	Sigla UF | Região | Mês/Ano | Vítimas
-'''
-
 '''
     /municipios/ -> Retorna todos os registros
         /municipios/
@@ -270,6 +267,7 @@ def total_vitimas_municipio():
     municipios = municipios.query(f"estado == '{uf}'") if (uf != None) else municipios  # Verifica se 'uf' existe e faz o filtro
     municipios = municipios.groupby('municipio').sum('vitimas') # Agrupa por munpicípio e soma as vítimas
     return municipios['vitimas'].to_json()
+
 
 '''
     /municipios/periodo -> Quantidade de vítimas em determinado município de acordo com Mês/Ano.
@@ -350,6 +348,7 @@ def ranking_vitimas_periodo_municipio():
         results = results.append(row, ignore_index=True)
 
     return results.to_json(orient='records')
+
 
 '''
     /municipios/livre_vitimas -> Municípios que não apresentaram vítimas em determinado Mês/Ano.
