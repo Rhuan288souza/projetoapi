@@ -147,9 +147,14 @@ def mesQtdMenorOcorrencias():
 '''
 @app.route('/ocorrenciasPorEstado')
 def ocorrenciasPorEstado():
+    ocorrencias = pd.read_csv('./datasets/estado_ocorrencias.csv')
+    ocorrencias.columns = ['uf', 'TipoCrime', 'ano', 'mes', 'ocorrencias']
+
     TipoCrime = request.args.get('TipoCrime', type = str)
 
-    return False
+    ocorrencias = ocorrencias.query(f"TipoCrime == '{TipoCrime}'") if (TipoCrime != None) else ocorrencias
+
+    return ocorrencias.to_json(orient='records')
 
 
 '''
