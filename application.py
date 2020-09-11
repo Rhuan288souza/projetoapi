@@ -38,10 +38,10 @@ def FiltraEstadoOcorrencias():
 
 
 '''
-    Top X de estados com maior número de ocorrências por crime em um determinado mês e ano
+    Top X de estados com maior ou Menor número de ocorrências por crime em um determinado mês e ano
     Por padrão mostra em ordem descendente
     Para ordem ascendente Ordem = asc
-    Exemplo : rankingocorrenciasEstado?TipoCrime=Estupro&Mes=janeiro&Tipo=Maior&Ano=2015&Qtd=10
+    Exemplo : /rankingocorrenciasEstado?TipoCrime=Estupro&Mes=janeiro&Tipo=Menor&Ano=2015&Qtd=3
 '''
 @app.route('/rankingocorrenciasEstado')
 def rankingOcorrencias():
@@ -68,7 +68,6 @@ def rankingOcorrencias():
     return ocorrencias.to_json(orient='records')
 
 
-
 '''
     Mês com maior quantidade de ocorrências de determinado crime, estado e ano
   
@@ -76,11 +75,23 @@ def rankingOcorrencias():
 '''
 @app.route('/mesMaiorQtdOcorrenciasEstado')
 def mesQtdMaiorOcorrencias():
-    UF = request.args.get('UF', type = str)
-    TipoCrime = request.args.get('TipoCrime', type = str)
-    Ano = request.args.get('Ano', type = int)
+    ocorrencias = pd.read_csv('./datasets/estado_ocorrencias.csv')
+    ocorrencias.columns = ['uf', 'TipoCrime', 'ano', 'mes', 'ocorrencias']
 
-    return False
+    uf = request.args.get('uf', type = str)
+    TipoCrime = request.args.get('TipoCrime', type = str)
+    ano = request.args.get('Ano', type = str)
+
+    ocorrencias = ocorrencias.query(f"TipoCrime == '{TipoCrime}'") if (TipoCrime != None) else ocorrencias
+    ocorrencias = ocorrencias.query(f"uf == '{uf}'") if (uf != None) else ocorrencias
+    ocorrencias = ocorrencias.query(f"ano == '{ano}'") if (ano != None) else ocorrencias
+    
+    ocorrencias = ocorrencias.sort_values('ocorrencias', ascending=False)
+    ocorrencias = ocorrencias[:1]
+
+    return ocorrencias.to_json(orient='records')
+
+
 
 
 
@@ -91,11 +102,21 @@ def mesQtdMaiorOcorrencias():
 '''
 @app.route('/mesMenorQtdOcorrenciasEstado')
 def mesQtdMenorOcorrencias():
-    UF = request.args.get('UF', type = str)
-    TipoCrime = request.args.get('TipoCrime', type = str)
-    Ano = request.args.get('Ano', type = int)
+    ocorrencias = pd.read_csv('./datasets/estado_ocorrencias.csv')
+    ocorrencias.columns = ['uf', 'TipoCrime', 'ano', 'mes', 'ocorrencias']
 
-    return False
+    uf = request.args.get('uf', type = str)
+    TipoCrime = request.args.get('TipoCrime', type = str)
+    ano = request.args.get('Ano', type = str)
+
+    ocorrencias = ocorrencias.query(f"TipoCrime == '{TipoCrime}'") if (TipoCrime != None) else ocorrencias
+    ocorrencias = ocorrencias.query(f"uf == '{uf}'") if (uf != None) else ocorrencias
+    ocorrencias = ocorrencias.query(f"ano == '{ano}'") if (ano != None) else ocorrencias
+    
+    ocorrencias = ocorrencias.sort_values('ocorrencias', ascending=True)
+    ocorrencias = ocorrencias[:1]
+
+    return ocorrencias.to_json(orient='records')
 
 
 '''
