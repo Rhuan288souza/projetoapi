@@ -2,6 +2,7 @@ from flask import Flask,jsonify,request
 import pandas as pd
 import json
 
+
 application = app = Flask(__name__)
 
 
@@ -312,12 +313,12 @@ def ranking_vitimas_municipios_uf():
         municipios = municipios.query(f"estado == '{uf}'") # Faz o filtro
         municipios = municipios.groupby('municipio').sum('vitimas')
         municipios = municipios.sort_values('vitimas', ascending=False)
-        maiores = municipios.iloc[0:10]['vitimas']
-        menores = municipios.iloc[-10:-1]['vitimas']
+        maiores = municipios.iloc[0:10]['vitimas'].to_dict()
+        menores = municipios.iloc[-10:-1]['vitimas'].to_dict()
         result = { 'maiores': maiores, 'menores': menores }
     else:
         return bad_request('Insira o estado') # Parâmetros faltantes
-    return dumps(result)
+    return json.dumps(result)
 
 
 '''
